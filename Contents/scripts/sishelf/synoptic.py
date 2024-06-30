@@ -7,7 +7,7 @@ def node_select(selectpartslist):
         if cmds.objExists(i):
             newselectpartslist.append(i)
         else:
-            print 'No Object "'+i+'" !!!'
+            print ('No Object "'+i+'" !!!')
     modi = cmds.getModifiers()
     if modi == 0:
         cmds.select(newselectpartslist, r=True)

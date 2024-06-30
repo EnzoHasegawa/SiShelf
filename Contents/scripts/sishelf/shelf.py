@@ -331,7 +331,7 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
         options = 0
         file_obj = QtWidgets.QFileDialog.getOpenFileName(parent, caption, dir_path, filters, selected_filter, options)
         image_path = file_obj[0]
-        if image_path is '':
+        if image_path == '':
             return
         self.currentWidget().background_image = image_path
         self.current_tab_widget_refresh()
@@ -858,7 +858,7 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
             _cw.delete_guide_widget()
 
     def eventFilter(self, obj, event):
-        print event.type()
+        print (event.type())
         return False
 
     def hideEvent(self, event):

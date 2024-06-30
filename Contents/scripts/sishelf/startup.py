@@ -90,8 +90,8 @@ def register_runtime_command(opt):
         mel.eval(name_cmd.format(**opt))
 
     except Exception as e:
-        print opt['cmd_name']
-        print opt['command']
+        print(opt['cmd_name'])
+        print(opt['command'])
         raise e
 
 
