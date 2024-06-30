@@ -179,29 +179,29 @@ def get_save_dir():
 
 
 def get_shelf_docking_filepath():
-    return os.path.join(get_save_dir(), 'shelf_docking.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'shelf_docking.json'))
 
 
 def get_button_default_filepath():
-    return os.path.join(get_save_dir(), 'button_default.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'button_default.json'))
 
 
 def get_partition_default_filepath():
-    return os.path.join(get_save_dir(), 'partition_default.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'partition_default.json'))
 
 
 def get_shelf_floating_filepath():
-    return os.path.join(get_save_dir(), 'shelf_floating.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'shelf_floating.json'))
     
 
 def get_shelf_option_filepath():
-    return os.path.join(get_save_dir(), 'shelf_option.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'shelf_option.json'))
 
 
 def get_tab_data_path():
     make_save_dir()
     path = os.path.join(get_save_dir(), 'parts.json')
-    return path
+    return os.path.normpath(path)
 
 
 def make_save_dir():
@@ -254,7 +254,7 @@ def not_escape_json_load(path):
 
 def random_string(length, seq=string.digits + string.ascii_lowercase):
     sr = random.SystemRandom()
-    return ''.join([sr.choice(seq) for i in xrange(length)])
+    return ''.join([sr.choice(seq) for i in range(length)])
 
 
 def maya_api_version():
