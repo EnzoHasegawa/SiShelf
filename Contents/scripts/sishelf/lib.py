@@ -215,18 +215,41 @@ def make_save_dir():
 # -----------------------
 # http://qiita.com/tadokoro/items/131268c9a0fd1cf85bf4
 # 日本語をエスケープさせずにjsonを読み書きする
+# def not_escape_json_dump(path, data):
+#     text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+#     with open(path, 'w') as fh:
+#         fh.write(text.encode('utf-8'))
+
+
+# def not_escape_json_load(path):
+#     if os.path.isfile(path) is False:
+#         return None
+#     with open(path) as fh:
+#         data = json.loads(fh.read(), "utf-8")
+#     return data
+
 def not_escape_json_dump(path, data):
-    text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
-    with open(path, 'w') as fh:
-        fh.write(text.encode('utf-8'))
+    try:
+        with open(path, 'w', encoding='utf-8') as fh:
+            json.dump(data, fh, sort_keys=True, ensure_ascii=False, indent=2)
+    except OSError as e:
+        print(f"Error writing JSON to '{path}': {e}")
 
 
 def not_escape_json_load(path):
-    if os.path.isfile(path) is False:
+    try:
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"File '{path}' not found.")
+
+        with open(path, 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+        return data
+    except OSError as e:
+        print(f"Error reading JSON from '{path}': {e}")
         return None
-    with open(path) as fh:
-        data = json.loads(fh.read(), "utf-8")
-    return data
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON in '{path}': {e}")
+        return None
 
 
 def random_string(length, seq=string.digits + string.ascii_lowercase):
