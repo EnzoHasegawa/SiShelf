@@ -1120,11 +1120,12 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
             pass
         elif self.currentWidget().reference is None:
             for s in self.selected:
-                css += '#' + s.objectName() + '{'
-                if isinstance(s.data, button.ButtonData):
-                    if s.data.use_bgcolor is True:
-                        css += 'background:' + s.data.bgcolor + ';'
-                css += 'border-color:red; border-style:solid; border-width:1px;}'
+                if s is not None and s.parent is not None:
+                    css += '#' + s.objectName() + '{'
+                    if isinstance(s.data, button.ButtonData):
+                        if s.data.use_bgcolor:
+                            css += 'background:' + s.data.bgcolor + ';'
+                    css += 'border-color:red; border-style:solid; border-width:1px;}'
 
             # synopticボタンの装飾
             for b in buttons:
@@ -1271,11 +1272,11 @@ class ShelfTabWidget(QtWidgets.QWidget):
         y = []
         # 横
         _u_y = self.snap_unit_y
-        for i in range(self.height() / _u_y + 1):
+        for i in range(self.height() // _u_y + 1):
             y.append(int(round(_u_y * i + self.position_offset_y % _u_y)))
         # 縦
         _u_x = self.snap_unit_x
-        for i in range(self.width() / _u_x + 1):
+        for i in range(self.width() // _u_x + 1):
             x.append(int(round(_u_x * i + self.position_offset_x % _u_x)))
         return x, y
 
@@ -1550,7 +1551,7 @@ def restoration_workspacecontrol():
     WINDOW = make_ui()
     restored_control = omui.MQtUtil.getCurrentParent()
     mixin_ptr = omui.MQtUtil.findControl(WINDOW.objectName())
-    omui.MQtUtil.addWidgetToMayaLayout(long(mixin_ptr), long(restored_control))
+    omui.MQtUtil.addWidgetToMayaLayout(mixin_ptr, restored_control)
 
 
 if __name__ == '__main__':

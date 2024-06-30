@@ -28,7 +28,7 @@ class ButtonWidget(QtWidgets.QToolButton):
 
     def mouseMoveEvent(self, event):
         # 中クリックだけドラッグ＆ドロップ可能にする
-        if event.buttons() != QtCore.Qt.MidButton:
+        if event.buttons() != QtCore.Qt.MouseButton.MiddleButton:
             return
         # ドラッグ＆ドロップされるデータ形式を代入
         mimedata = QtCore.QMimeData()
