@@ -15,7 +15,8 @@ from . import save_screen_shot
 import json
 import os
 import os.path
-import pymel.core as pm
+# pymelを削除
+# import pymel.core as pm
 import maya.cmds as cmds
 import re
 import copy
@@ -1463,8 +1464,9 @@ def quit_app():
 
 
 def make_quit_app_job():
-    pm.scriptJob(e=("quitApplication", pm.Callback(quit_app)))
-
+    # pymelをcmdsに
+    # pm.scriptJob(e=("quitApplication", pm.Callback(quit_app)))
+    cmds.scriptJob(event=("quitApplication",quit_app))
 
 def restoration_docking_ui():
     '''
