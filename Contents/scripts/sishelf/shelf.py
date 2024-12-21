@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .vendor.Qt import QtCore, QtGui, QtWidgets
+from .vendor.Qt import QtCore, QtGui, QtWidgets, QtCompat
 from . import button_setting
 from . import button
 from . import partition
@@ -15,8 +15,6 @@ from . import save_screen_shot
 import json
 import os
 import os.path
-# pymelを削除
-# import pymel.core as pm
 import maya.cmds as cmds
 import re
 import copy
@@ -618,6 +616,8 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
 
             if _mimedata.hasText() is True:
                 data.code = _mimedata.text()
+                if isinstance(data.code, bytes):
+                    data.code = data.code.decode('utf-8')
 
             if _mimedata.hasUrls() is True:
                 #複数ファイルの場合は最後のファイルが有効になる
@@ -626,6 +626,9 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
                         _path = re.sub("^/", "", url.path())
                     else:  # PySide2
                         _path = re.sub("^file:///", "", url.url())
+
+                    if isinstance(_path, bytes):
+                        _path = _path.decode('utf-8')
                 # 外部エディタから投げ込んだ場合もこちらに来るので回避
                 if _path != '':
                     data.externalfile = _path
@@ -1121,12 +1124,13 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
             pass
         elif self.currentWidget().reference is None:
             for s in self.selected:
-                if s is not None and s.parent is not None:
-                    css += '#' + s.objectName() + '{'
-                    if isinstance(s.data, button.ButtonData):
-                        if s.data.use_bgcolor:
-                            css += 'background:' + s.data.bgcolor + ';'
-                    css += 'border-color:red; border-style:solid; border-width:1px;}'
+                if QtCompat.isValid(s):
+                    if s is not None and s.parent is not None:
+                        css += '#' + s.objectName() + '{'
+                        if isinstance(s.data, button.ButtonData):
+                            if s.data.use_bgcolor:
+                                css += 'background:' + s.data.bgcolor + ';'
+                        css += 'border-color:red; border-style:solid; border-width:1px;}'
 
             # synopticボタンの装飾
             for b in buttons:
@@ -1464,9 +1468,8 @@ def quit_app():
 
 
 def make_quit_app_job():
-    # pymelをcmdsに
-    # pm.scriptJob(e=("quitApplication", pm.Callback(quit_app)))
-    cmds.scriptJob(event=("quitApplication",quit_app))
+    cmds.scriptJob(event=("quitApplication", quit_app))
+
 
 def restoration_docking_ui():
     '''
@@ -1553,7 +1556,7 @@ def restoration_workspacecontrol():
     WINDOW = make_ui()
     restored_control = omui.MQtUtil.getCurrentParent()
     mixin_ptr = omui.MQtUtil.findControl(WINDOW.objectName())
-    omui.MQtUtil.addWidgetToMayaLayout(mixin_ptr, restored_control)
+    omui.MQtUtil.addWidgetToMayaLayout(int(mixin_ptr), int(restored_control))
 
 
 if __name__ == '__main__':

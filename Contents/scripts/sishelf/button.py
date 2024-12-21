@@ -263,8 +263,8 @@ def menu_data_context(menu, data):
             lib.escape(_d['code'].encode('cp932')),
             _d['script_language'].lower()
         ))
-        menu.addAction(_d['label'], _f)
-
+        # menu.addAction(_d['label'], _f)
+        menu.addAction(_d['label'])
 
 def normal_data_context(menu, data):
         # codeは文字をエスケープしておかないとエラーになるので注意
@@ -275,7 +275,9 @@ def normal_data_context(menu, data):
             data.script_language.lower()
         ))
 
-        _act = menu.addAction(data.label, _f)
+        # _act = menu.addAction(data.label, _f)
+        _act = menu.addAction(data.label)
+
         if data.use_icon:
             _act.setIcon(data.icon)
         '''

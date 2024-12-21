@@ -1,4 +1,4 @@
-## -*- coding: utf-8 -*-
+# # -*- coding: utf-8 -*-
 from .vendor.Qt import QtCore, QtGui, QtWidgets
 import random
 import string
@@ -36,28 +36,37 @@ class PartsData(object):
         return save_dict
 
     label_font_size_view = property(doc='label_font_size_view property')
+
     @label_font_size_view.getter
     def label_font_size_view(self):
         return self.label_font_size * self.temp_scale
 
     position = property(doc='position property')
+
     @position.getter
     def position(self):
         _x = self.position_x * self.temp_scale + self.temp_position_offset_x
         _y = self.position_y * self.temp_scale + self.temp_position_offset_y
-        return QtCore.QPoint(_x , _y)
+        return QtCore.QPoint(_x, _y)
 
     @position.setter
     def position(self, data):
-        self.position_x = int((data.x() - self.temp_position_offset_x) / self.temp_scale)
-        self.position_y = int((data.y() - self.temp_position_offset_y) / self.temp_scale)
+        self.position_x = int(
+            (data.x() - self.temp_position_offset_x) / self.temp_scale
+            )
+        self.position_y = int(
+            (data.y() - self.temp_position_offset_y) / self.temp_scale
+            )
 
     size = property(doc='size property')
+
     @size.getter
     def size(self):
         if self.size_flag is False:
             return None
-        return QtCore.QSize(self.width * self.temp_scale, self.height * self.temp_scale)
+        return QtCore.QSize(
+            self.width * self.temp_scale, self.height * self.temp_scale
+            )
 
     @size.setter
     def size(self, data):
@@ -192,7 +201,7 @@ def get_partition_default_filepath():
 
 def get_shelf_floating_filepath():
     return os.path.normpath(os.path.join(get_save_dir(), 'shelf_floating.json'))
-    
+
 
 def get_shelf_option_filepath():
     return os.path.normpath(os.path.join(get_save_dir(), 'shelf_option.json'))
@@ -220,36 +229,34 @@ def make_save_dir():
 #     with open(path, 'w') as fh:
 #         fh.write(text.encode('utf-8'))
 
-
-# def not_escape_json_load(path):
-#     if os.path.isfile(path) is False:
-#         return None
-#     with open(path) as fh:
-#         data = json.loads(fh.read(), "utf-8")
-#     return data
-
 def not_escape_json_dump(path, data):
+    # JSON データをファイルに書き込む
     try:
-        with open(path, 'w', encoding='utf-8') as fh:
-            json.dump(data, fh, sort_keys=True, ensure_ascii=False, indent=2)
-    except OSError as e:
-        print(f"Error writing JSON to '{path}': {e}")
+        # UTF-8エンコーディングで書き込み
+        text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+        with open(path, 'w', encoding="utf-8") as fh:
+            fh.write(text)
+    except TypeError:
+        text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+        with open(path, 'w') as fh:
+            fh.write(text.encode('utf-8'))
 
 
 def not_escape_json_load(path):
     try:
         if not os.path.isfile(path):
-            raise FileNotFoundError(f"File '{path}' not found.")
-
-        with open(path, 'r', encoding='utf-8') as fh:
-            data = json.load(fh)
+            return None
+        # ファイルをUTF-8として読み込む
+        with open(path, encoding="utf-8") as fh:
+            # JSON文字列をロード
+            data = json.loads(fh.read())
         return data
-    except OSError as e:
-        print(f"Error reading JSON from '{path}': {e}")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON in '{path}': {e}")
-        return None
+    except TypeError:
+        if os.path.isfile(path) is False:
+            return None
+        with open(path) as fh:
+            data = json.loads(fh.read(), "utf-8")
+        return data
 
 
 def random_string(length, seq=string.digits + string.ascii_lowercase):
@@ -260,15 +267,24 @@ def random_string(length, seq=string.digits + string.ascii_lowercase):
 def maya_api_version():
     return int(cmds.about(api=True))
 
+
 def maya_version():
     return int(cmds.about(v=True)[:4])
 
 
 def escape(s, quoted='\'"\\', escape='\\'):
+    # return re.sub(
+    #         '[%s]' % re.escape(quoted),
+    #         lambda mo: escape + mo.group(),
+    #         s)
+    # UTF-8でデコード
+    if isinstance(s, bytes):
+        s = s.decode('utf-8')
     return re.sub(
-            '[%s]' % re.escape(quoted),
-            lambda mo: escape + mo.group(),
-            s)
+        '[%s]' % re.escape(quoted),
+        lambda mo: escape + mo.group(),
+        s
+        )
 
 
 def script_execute(code, source_type):
@@ -280,7 +296,9 @@ def script_execute(code, source_type):
     '''
     window = cmds.window()
     cmds.columnLayout()
-    cmds.cmdScrollFieldExecuter(t=code, opc=1, sln=1, exa=1, sourceType=source_type)
+    cmds.cmdScrollFieldExecuter(
+        t=code, opc=1, sln=1, exa=1, sourceType=source_type
+        )
     cmds.deleteUI(window)
 
 
@@ -295,6 +313,7 @@ def _f():
     lib.script_execute(code, source_type)
 """
 
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # EOF
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
