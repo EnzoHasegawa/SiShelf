@@ -243,26 +243,20 @@ def not_escape_json_dump(path, data):
 
 
 def not_escape_json_load(path):
-    # Maya 2019以下の場合の処理
-    if maya_version() <= 2019:
-        return re.sub(
-                '[%s]' % re.escape(quoted),
-                lambda mo: escape + mo.group(),
-                s)
-    # Maya 2020以上の場合の処理
-    else:
-        try:
-            if isinstance(s, bytes):
-                s = s.decode('utf-8')
-        except UnicodeDecodeError:
-            if isinstance(s, bytes):
-                s = s.decode('Shift-JIS')
-
-        return re.sub(
-            '[%s]' % re.escape(quoted),
-            lambda mo: escape + mo.group(),
-            s
-            )
+    try:
+        if not os.path.isfile(path):
+            return None
+        # ファイルをUTF-8として読み込む
+        with open(path, encoding="utf-8") as fh:
+            # JSON文字列をロード
+            data = json.loads(fh.read())
+        return data
+    except TypeError:
+        if os.path.isfile(path) is False:
+            return None
+        with open(path) as fh:
+            data = json.loads(fh.read(), "utf-8")
+        return data
 
 
 def random_string(length, seq=string.digits + string.ascii_lowercase):
@@ -279,22 +273,21 @@ def maya_version():
 
 
 def escape(s, quoted='\'"\\', escape='\\'):
-    # return re.sub(
-    #         '[%s]' % re.escape(quoted),
-    #         lambda mo: escape + mo.group(),
-    #         s)
-    # UTF-8でデコード
-    try: 
-        if isinstance(s, bytes):
-            s = s.decode('utf-8')
+    # Maya 2019以下の場合の処理
+    if maya_version() <= 2019:
         return re.sub(
-            '[%s]' % re.escape(quoted),
-            lambda mo: escape + mo.group(),
-            s
-            )
-    except UnicodeDecodeError:
-        if isinstance(s, bytes):
-            s = s.decode('Shift-JIS')
+                '[%s]' % re.escape(quoted),
+                lambda mo: escape + mo.group(),
+                s)
+    # Maya 2020以上の場合の処理
+    else:
+        try:
+            if isinstance(s, bytes):
+                s = s.decode('utf-8')
+        except UnicodeDecodeError:
+            if isinstance(s, bytes):
+                s = s.decode('Shift-JIS')
+
         return re.sub(
             '[%s]' % re.escape(quoted),
             lambda mo: escape + mo.group(),
