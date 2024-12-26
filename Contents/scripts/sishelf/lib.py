@@ -1,4 +1,4 @@
-## -*- coding: utf-8 -*-
+# # -*- coding: utf-8 -*-
 from .vendor.Qt import QtCore, QtGui, QtWidgets
 import random
 import string
@@ -36,28 +36,37 @@ class PartsData(object):
         return save_dict
 
     label_font_size_view = property(doc='label_font_size_view property')
+
     @label_font_size_view.getter
     def label_font_size_view(self):
         return self.label_font_size * self.temp_scale
 
     position = property(doc='position property')
+
     @position.getter
     def position(self):
         _x = self.position_x * self.temp_scale + self.temp_position_offset_x
         _y = self.position_y * self.temp_scale + self.temp_position_offset_y
-        return QtCore.QPoint(_x , _y)
+        return QtCore.QPoint(_x, _y)
 
     @position.setter
     def position(self, data):
-        self.position_x = int((data.x() - self.temp_position_offset_x) / self.temp_scale)
-        self.position_y = int((data.y() - self.temp_position_offset_y) / self.temp_scale)
+        self.position_x = int(
+            (data.x() - self.temp_position_offset_x) / self.temp_scale
+            )
+        self.position_y = int(
+            (data.y() - self.temp_position_offset_y) / self.temp_scale
+            )
 
     size = property(doc='size property')
+
     @size.getter
     def size(self):
         if self.size_flag is False:
             return None
-        return QtCore.QSize(self.width * self.temp_scale, self.height * self.temp_scale)
+        return QtCore.QSize(
+            self.width * self.temp_scale, self.height * self.temp_scale
+            )
 
     @size.setter
     def size(self, data):
@@ -179,29 +188,29 @@ def get_save_dir():
 
 
 def get_shelf_docking_filepath():
-    return os.path.join(get_save_dir(), 'shelf_docking.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'shelf_docking.json'))
 
 
 def get_button_default_filepath():
-    return os.path.join(get_save_dir(), 'button_default.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'button_default.json'))
 
 
 def get_partition_default_filepath():
-    return os.path.join(get_save_dir(), 'partition_default.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'partition_default.json'))
 
 
 def get_shelf_floating_filepath():
-    return os.path.join(get_save_dir(), 'shelf_floating.json')
-    
+    return os.path.normpath(os.path.join(get_save_dir(), 'shelf_floating.json'))
+
 
 def get_shelf_option_filepath():
-    return os.path.join(get_save_dir(), 'shelf_option.json')
+    return os.path.normpath(os.path.join(get_save_dir(), 'shelf_option.json'))
 
 
 def get_tab_data_path():
     make_save_dir()
     path = os.path.join(get_save_dir(), 'parts.json')
-    return path
+    return os.path.normpath(path)
 
 
 def make_save_dir():
@@ -215,37 +224,76 @@ def make_save_dir():
 # -----------------------
 # http://qiita.com/tadokoro/items/131268c9a0fd1cf85bf4
 # 日本語をエスケープさせずにjsonを読み書きする
+# def not_escape_json_dump(path, data):
+#     text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+#     with open(path, 'w') as fh:
+#         fh.write(text.encode('utf-8'))
+
 def not_escape_json_dump(path, data):
-    text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
-    with open(path, 'w') as fh:
-        fh.write(text.encode('utf-8'))
+    # JSON データをファイルに書き込む
+    try:
+        # UTF-8エンコーディングで書き込み
+        text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+        with open(path, 'w', encoding="utf-8") as fh:
+            fh.write(text)
+    except TypeError:
+        text = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+        with open(path, 'w') as fh:
+            fh.write(text.encode('utf-8'))
 
 
 def not_escape_json_load(path):
-    if os.path.isfile(path) is False:
-        return None
-    with open(path) as fh:
-        data = json.loads(fh.read(), "utf-8")
-    return data
+    try:
+        if not os.path.isfile(path):
+            return None
+        # ファイルをUTF-8として読み込む
+        with open(path, encoding="utf-8") as fh:
+            # JSON文字列をロード
+            data = json.loads(fh.read())
+        return data
+    except TypeError:
+        if os.path.isfile(path) is False:
+            return None
+        with open(path) as fh:
+            data = json.loads(fh.read(), "utf-8")
+        return data
 
 
 def random_string(length, seq=string.digits + string.ascii_lowercase):
     sr = random.SystemRandom()
-    return ''.join([sr.choice(seq) for i in xrange(length)])
+    return ''.join([sr.choice(seq) for i in range(length)])
 
 
 def maya_api_version():
     return int(cmds.about(api=True))
+
 
 def maya_version():
     return int(cmds.about(v=True)[:4])
 
 
 def escape(s, quoted='\'"\\', escape='\\'):
-    return re.sub(
+    # Maya 2019以下の場合の処理
+    if maya_version() <= 2019:
+        return re.sub(
+                '[%s]' % re.escape(quoted),
+                lambda mo: escape + mo.group(),
+                s)
+    # Maya 2020以上の場合の処理
+    else:
+        try:
+            if isinstance(s, bytes):
+                s = s.decode('utf-8')
+        except UnicodeDecodeError:
+            if isinstance(s, bytes):
+                s = s.decode('Shift-JIS')
+
+        return re.sub(
             '[%s]' % re.escape(quoted),
             lambda mo: escape + mo.group(),
-            s)
+            s
+            )
+
 
 
 def script_execute(code, source_type):
@@ -257,7 +305,9 @@ def script_execute(code, source_type):
     '''
     window = cmds.window()
     cmds.columnLayout()
-    cmds.cmdScrollFieldExecuter(t=code, opc=1, sln=1, exa=1, sourceType=source_type)
+    cmds.cmdScrollFieldExecuter(
+        t=code, opc=1, sln=1, exa=1, sourceType=source_type
+        )
     cmds.deleteUI(window)
 
 
@@ -272,6 +322,7 @@ def _f():
     lib.script_execute(code, source_type)
 """
 
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # EOF
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------

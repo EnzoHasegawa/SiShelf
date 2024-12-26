@@ -42,7 +42,7 @@ class SettingDialog(QtWidgets.QDialog, partition_setting_ui.Ui_Form):
             QtWidgets.QLineEdit.keyPressEvent(widget, event)
 
             key = event.key()
-            print key
+            print (key)
             if (key == QtCore.Qt.Key_Enter) or (key == QtCore.Qt.Key_Return):
                 self._redraw_ui()
 

@@ -28,7 +28,7 @@ class ButtonWidget(QtWidgets.QToolButton):
 
     def mouseMoveEvent(self, event):
         # 中クリックだけドラッグ＆ドロップ可能にする
-        if event.buttons() != QtCore.Qt.MidButton:
+        if event.buttons() != QtCore.Qt.MouseButton.MiddleButton:
             return
         # ドラッグ＆ドロップされるデータ形式を代入
         mimedata = QtCore.QMimeData()
@@ -262,9 +262,8 @@ def menu_data_context(menu, data):
             _d['externalfile'],
             lib.escape(_d['code'].encode('cp932')),
             _d['script_language'].lower()
-        ))
+        ), globals())
         menu.addAction(_d['label'], _f)
-
 
 def normal_data_context(menu, data):
         # codeは文字をエスケープしておかないとエラーになるので注意
@@ -273,9 +272,10 @@ def normal_data_context(menu, data):
             data.externalfile,
             lib.escape(data.code.encode('cp932')),
             data.script_language.lower()
-        ))
+        ), globals())
 
         _act = menu.addAction(data.label, _f)
+
         if data.use_icon:
             _act.setIcon(data.icon)
         '''

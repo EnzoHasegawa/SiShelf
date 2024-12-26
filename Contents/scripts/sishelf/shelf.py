@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .vendor.Qt import QtCore, QtGui, QtWidgets
+from .vendor.Qt import QtCore, QtGui, QtWidgets, QtCompat
 from . import button_setting
 from . import button
 from . import partition
@@ -15,7 +15,6 @@ from . import save_screen_shot
 import json
 import os
 import os.path
-import pymel.core as pm
 import maya.cmds as cmds
 import re
 import copy
@@ -331,7 +330,7 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
         options = 0
         file_obj = QtWidgets.QFileDialog.getOpenFileName(parent, caption, dir_path, filters, selected_filter, options)
         image_path = file_obj[0]
-        if image_path is '':
+        if image_path == '':
             return
         self.currentWidget().background_image = image_path
         self.current_tab_widget_refresh()
@@ -617,6 +616,8 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
 
             if _mimedata.hasText() is True:
                 data.code = _mimedata.text()
+                if isinstance(data.code, bytes):
+                    data.code = data.code.decode('utf-8')
 
             if _mimedata.hasUrls() is True:
                 #複数ファイルの場合は最後のファイルが有効になる
@@ -625,6 +626,9 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
                         _path = re.sub("^/", "", url.path())
                     else:  # PySide2
                         _path = re.sub("^file:///", "", url.url())
+
+                    if isinstance(_path, bytes):
+                        _path = _path.decode('utf-8')
                 # 外部エディタから投げ込んだ場合もこちらに来るので回避
                 if _path != '':
                     data.externalfile = _path
@@ -858,7 +862,7 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
             _cw.delete_guide_widget()
 
     def eventFilter(self, obj, event):
-        print event.type()
+        print (event.type())
         return False
 
     def hideEvent(self, event):
@@ -1120,11 +1124,13 @@ class SiShelfWidget(MayaQWidgetDockableMixin, QtWidgets.QTabWidget):
             pass
         elif self.currentWidget().reference is None:
             for s in self.selected:
-                css += '#' + s.objectName() + '{'
-                if isinstance(s.data, button.ButtonData):
-                    if s.data.use_bgcolor is True:
-                        css += 'background:' + s.data.bgcolor + ';'
-                css += 'border-color:red; border-style:solid; border-width:1px;}'
+                if QtCompat.isValid(s):
+                    if s is not None and s.parent is not None:
+                        css += '#' + s.objectName() + '{'
+                        if isinstance(s.data, button.ButtonData):
+                            if s.data.use_bgcolor:
+                                css += 'background:' + s.data.bgcolor + ';'
+                        css += 'border-color:red; border-style:solid; border-width:1px;}'
 
             # synopticボタンの装飾
             for b in buttons:
@@ -1271,11 +1277,11 @@ class ShelfTabWidget(QtWidgets.QWidget):
         y = []
         # 横
         _u_y = self.snap_unit_y
-        for i in range(self.height() / _u_y + 1):
+        for i in range(self.height() // _u_y + 1):
             y.append(int(round(_u_y * i + self.position_offset_y % _u_y)))
         # 縦
         _u_x = self.snap_unit_x
-        for i in range(self.width() / _u_x + 1):
+        for i in range(self.width() // _u_x + 1):
             x.append(int(round(_u_x * i + self.position_offset_x % _u_x)))
         return x, y
 
@@ -1462,7 +1468,7 @@ def quit_app():
 
 
 def make_quit_app_job():
-    pm.scriptJob(e=("quitApplication", pm.Callback(quit_app)))
+    cmds.scriptJob(event=("quitApplication", quit_app))
 
 
 def restoration_docking_ui():
@@ -1550,7 +1556,7 @@ def restoration_workspacecontrol():
     WINDOW = make_ui()
     restored_control = omui.MQtUtil.getCurrentParent()
     mixin_ptr = omui.MQtUtil.findControl(WINDOW.objectName())
-    omui.MQtUtil.addWidgetToMayaLayout(long(mixin_ptr), long(restored_control))
+    omui.MQtUtil.addWidgetToMayaLayout(int(mixin_ptr), int(restored_control))
 
 
 if __name__ == '__main__':

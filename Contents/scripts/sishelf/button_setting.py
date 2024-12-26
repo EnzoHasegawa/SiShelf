@@ -12,10 +12,12 @@ from .gui import button_setting_ui
 class LineNumberTextEdit(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
         super(LineNumberTextEdit, self).__init__(parent)
-        self.setViewportMargins(self.fontMetrics().width("8") * 8, 0, 0, 0)
+        metrics = QtGui.QFontMetrics(self.font())
+        margin_width = metrics.boundingRect("8").width() * 8
+        self.setViewportMargins(margin_width, 0, 0, 0)
         self.side = QtWidgets.QWidget(self)
+        self.side.setGeometry(0, 0, margin_width, self.height())
         self.side.installEventFilter(self)
-        self.side.setGeometry(0, 0, self.fontMetrics().width("8") * 8, self.height())
         self.setAcceptDrops(False)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
@@ -26,7 +28,8 @@ class LineNumberTextEdit(QtWidgets.QTextEdit):
             num = 1
         else:
             num = 0
-        self.side.setGeometry(0, 0, self.fontMetrics().width("8") * 8, self.height() + num)
+        bounding_rect = self.fontMetrics().boundingRect("8")
+        self.side.setGeometry(0, 0, bounding_rect.width() * 8, self.height() + num)
         self.draw_tab()
 
     def eventFilter(self, o, e):

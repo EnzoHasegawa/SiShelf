@@ -13,7 +13,7 @@ class PartitionWidget(QtWidgets.QWidget):
 
     def mouseMoveEvent(self, event):
         # 中クリックだけドラッグ＆ドロップ可能にする
-        if event.buttons() != QtCore.Qt.MidButton:
+        if event.buttons() != QtCore.Qt.MouseButton.MiddleButton:
             return
         # ドラッグ＆ドロップされるデータ形式を代入
         mimedata = QtCore.QMimeData()
@@ -46,8 +46,9 @@ class PartitionWidget(QtWidgets.QWidget):
         _h = self.data.margin + int(self.data.line_width * 1.5)
         if self.data.use_label is True:
             fm = painter.fontMetrics()
-            if _w < fm.width(self.data.label):
-                _w = fm.width(self.data.label)
+            label_width = fm.boundingRect(self.data.label).width()
+            if _w < label_width:
+                _w = label_width
             if _h < fm.height():
                 _h = fm.height()
         _w += self.data.margin * 2
