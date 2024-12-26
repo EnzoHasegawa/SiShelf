@@ -278,13 +278,23 @@ def escape(s, quoted='\'"\\', escape='\\'):
     #         lambda mo: escape + mo.group(),
     #         s)
     # UTF-8でデコード
-    if isinstance(s, bytes):
-        s = s.decode('utf-8')
-    return re.sub(
-        '[%s]' % re.escape(quoted),
-        lambda mo: escape + mo.group(),
-        s
-        )
+    try: 
+        if isinstance(s, bytes):
+            s = s.decode('utf-8')
+        return re.sub(
+            '[%s]' % re.escape(quoted),
+            lambda mo: escape + mo.group(),
+            s
+            )
+    except UnicodeDecodeError:
+        if isinstance(s, bytes):
+            s = s.decode('Shift-JIS')
+        return re.sub(
+            '[%s]' % re.escape(quoted),
+            lambda mo: escape + mo.group(),
+            s
+            )
+
 
 
 def script_execute(code, source_type):
