@@ -5,6 +5,11 @@ from . import button
 import sys
 # from __future__ import absolute_import, division, print_function
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
 SORT_ROLE = QtCore.Qt.UserRole + 1
 
 
